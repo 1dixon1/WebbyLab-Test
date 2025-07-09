@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Інтерфейс фільмів</title>
+</head>
+<body>
+  <h1>Інтерфейс керування фільмами</h1>
+
+  <section>
+    <h2>Пошук</h2>
+    <input type="text" id="search-title" placeholder="Пошук за назвою">
+    <button onclick="searchByTitle()">Знайти</button>
+    <input type="text" id="search-actor" placeholder="Пошук за актором">
+    <button onclick="searchByActor()">Знайти</button>
+  </section>
+
+  <section>
+    <h2>Додати фільм</h2>
+    <form id="add-form">
+      <input type="text" name="title" placeholder="Назва" required>
+      <input type="number" name="year" placeholder="Рік" required>
+      <select name="format">
+        <option>DVD</option>
+        <option>VHS</option>
+        <option>Blu-Ray</option>
+      </select>
+      <input type="text" name="stars" placeholder="Актори (через кому)" required>
+      <button type="submit">Додати</button>
+    </form>
+  </section>
+
+  <section>
+    <h2>Імпорт фільмів</h2>
+    <form id="import-form" enctype="multipart/form-data">
+      <input type="file" name="file" required>
+      <button type="submit">Імпортувати</button>
+    </form>
+  </section>
+
+  <section>
+    <h2>Список фільмів</h2>
+    <ul id="movie-list"></ul>
+  </section>
+
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = '/login';
+
+    async function fetchMovies() {
+      const res = await fetch('/api/movies', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const movies = await res.json();
+      const list = document.getElementById('movie-list');
+      list.innerHTML = '';
+      movies.forEach(m => {
+        const li = document.createElement('li');
+        li.innerHTML = `<b>${m.title}</b> (${m.year}) [${m.format}]<br>Актори: ${m.Actors.map(a => a.fullName).join(', ')}<br>
+        <button onclick="deleteMovie('${m.id}')">Видалити</button>`;
+        list.appendChild(li);
+      });
+    }
+
+    async function deleteMovie(id) {
+      await fetch(`/api/movies/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchMovies();
+    }
+
+    document.getElementById('add-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = new FormData(e.target);
+      const body = {
+        title: data.get('title'),
+        year: Number(data.get('year')),
+        format: data.get('format'),
+        stars: data.get('stars').split(',').map(s => s.trim())
+      };
+      await fetch('/api/movies', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(body)
+      });
+      fetchMovies();
+    });
+
+    document.getElementById('import-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = new FormData(e.target);
+      await fetch('/api/movies/import', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: data
+      });
+      fetchMovies();
+    });
+
+    async function searchByTitle() {
+      const title = document.getElementById('search-title').value;
+      const res = await fetch(`/api/movies/search/title?title=${encodeURIComponent(title)}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const movies = await res.json();
+      alert(`Знайдено ${movies.length} фільм(ів)`);
+    }
+
+    async function searchByActor() {
+      const actor = document.getElementById('search-actor').value;
+      const res = await fetch(`/api/movies/search/actor?actor=${encodeURIComponent(actor)}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const movies = await res.json();
+      alert(`Знайдено ${movies.length} фільм(ів)`);
+    }
+
+    fetchMovies();
+  </script>
+</body>
+</html>
