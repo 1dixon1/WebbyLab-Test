@@ -39,19 +39,42 @@ exports.searchByActor = async (req, res) => {
 };
 
 exports.importMovies = async (req, res) => {
-  const file = req.file;
-  const content = fs.readFileSync(file.path, 'utf-8');
-  const movies = content.split(/\n{2,}/);
-  for (const block of movies) {
-    const title = block.match(/Title: (.*)/)?.[1];
-    const year = parseInt(block.match(/Release Year: (\d+)/)?.[1]);
-    const format = block.match(/Format: (.*)/)?.[1];
-    const stars = block.match(/Stars: (.*)/)?.[1]?.split(',').map(s => s.trim()) || [];
-    if (title && year && format) {
-      const movie = await Movie.create({ title, year, format });
-      const actors = await Promise.all(stars.map(name => Actor.findOrCreate({ where: { fullName: name } })));
-      await movie.setActors(actors.map(a => a[0]));
+  try {
+    const file = req.file;
+    const content = fs.readFileSync(file.path, 'utf-8');
+
+    const blocks = content.trim().split(/\n\s*\n/);
+    let imported = 0;
+
+    for (const block of blocks) {
+      const title = block.match(/Title:\s*(.*)/)?.[1]?.trim();
+      const year = parseInt(block.match(/Release Year:\s*(\d{4})/)?.[1]);
+      const format = block.match(/Format:\s*(.*)/)?.[1]?.trim();
+      const starsLine = block.match(/Stars:\s*(.*)/)?.[1];
+      const stars = starsLine ? starsLine.split(',').map(s => s.trim()) : [];
+
+      if (!title || !year || !format) {
+        console.warn('❗ Пропущено некоректний блок:\n', block);
+        continue;
+      }
+
+      try {
+        const movie = await Movie.create({ title, year, format });
+
+        for (const star of stars) {
+          const [actor] = await Actor.findOrCreate({ where: { fullName: star } });
+          await movie.addActor(actor);
+        }
+
+        imported++;
+      } catch (innerErr) {
+        console.error(`❌ Помилка при додаванні фільму "${title}":`, innerErr.message);
+      }
     }
+
+    res.json({ message: `✅ Імпортовано ${imported} фільм(ів)` });
+  } catch (err) {
+    console.error('❌ Помилка при імпорті:', err);
+    res.status(500).json({ error: 'Помилка імпорту' });
   }
-  res.json({ message: 'Import successful' });
 };
