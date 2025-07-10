@@ -14,7 +14,7 @@
 
 - GET   `/api/profile`
 
-## Веб-інтерфейс імпорту
+## Веб-інтерфейс 
 - [Реєстрація](http://localhost:8050/register)
 - [Логін](http://localhost:8050/login)
 - [Інтерфейс](http://localhost:8050/app)

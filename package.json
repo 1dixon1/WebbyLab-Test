@@ -2,7 +2,7 @@
   "name": "webbylab-test",
   "main": "index.js",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "npm install && node src/index.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
