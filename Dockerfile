@@ -1,8 +1,15 @@
 
 
-FROM node:20
+FROM node:18
 
-RUN apk add --no-cache python3 make g++ sqlite sqlite-dev
+RUN apt-get update && apt-get install -y \
+  python3 \
+  make \
+  g++ \
+  sqlite3 \
+  libsqlite3-dev \
+  && rm -rf /var/lib/apt/lists/*
+
 
 WORKDIR /src/index.js
 
