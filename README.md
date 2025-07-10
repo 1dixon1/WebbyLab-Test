@@ -4,7 +4,7 @@
 ## Швидкій запуск 
 
 - [введіть команду в термінал] — docker run --name movies -p 8000:8050 -e APP_PORT=8050 1dixon1/movies
-- [перейдіть по посиланню] — `http://localhost:8050/register`
+- [перейдіть по посиланню] — `http://localhost:8000/register`
 
 
 ## API
@@ -34,9 +34,9 @@
 3. Завантаж `sample_movies.txt` в секцію імпорту
 
 ## Веб-інтерфейс 
-- [Реєстрація](http://localhost:8050/register)
-- [Логін](http://localhost:8050/login)
-- [Інтерфейс](http://localhost:8050/app)
+- [Реєстрація](http://localhost:8000/register)
+- [Логін](http://localhost:8000/login)
+- [Інтерфейс](http://localhost:8000/app)
 
 
 ## Структура проєкту
