@@ -56,7 +56,7 @@
       list.innerHTML = '';
       movies.forEach(m => {
         const li = document.createElement('li');
-        li.innerHTML = `<b>${m.title}</b> (${m.year}) [${m.format}]<br>Актори: ${m.Actors.map(a => a.fullName).join(', ')}<br>
+        li.innerHTML = `<b>${m.id} : </b><b>${m.title}</b> (${m.year}) [${m.format}]<br>Актори: ${m.Actors.map(a => a.fullName).join(', ')}<br>
         <button onclick="deleteMovie('${m.id}')">Видалити</button>`;
         list.appendChild(li);
       });
